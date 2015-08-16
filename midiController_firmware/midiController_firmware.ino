@@ -253,7 +253,7 @@ void showLoadPreset(){
   lcd.setCursor(0, 0);
   lcd.print("Waiting for");
   lcd.setCursor(0, 1);
-  lcd.print("connection...");
+  lcd.print("data...         ");
 }
 
 void showSetPreset(){
