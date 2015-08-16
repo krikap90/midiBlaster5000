@@ -8,6 +8,8 @@
  * by Andreas Schlegel, 2012
  * www.sojamo.de/libraries/controlp5
  *
+ * LUKAS STINKT HART AB!
+ *
  */
 
 import processing.serial.*; //import the Serial library
