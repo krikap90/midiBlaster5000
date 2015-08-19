@@ -21,7 +21,7 @@ boolean firstContact = false;
 ControlP5 cp5;
 DropdownList d1, d2;
 Textlabel l1p1;
-Textlabel error;
+Textlabel error1, error2, connect, notConnect;
 Textfield t1p1, t2p1, t3p1, t4p1;
 Textfield presetName;
 String textValue = "";
@@ -30,17 +30,19 @@ PImage img;
 void setup() {
 
   frameRate(24);
-  size(900, 625);
-  img = loadImage("fondo2.jpg");
-  
+  size(900, 650);
+  //img = loadImage("fondo2.jpg");
+
   cp5 = new ControlP5(this);
   drawEvents();
   drawPotis();
 }  
 
 void draw() {
-  background(0);
-  image(img, 0, 0, 900, 625);
+  background(80);
+  //image(img, 0, 0, 900, 625);
+  drawManual();
+
   fill(40);
 }
 
@@ -103,70 +105,104 @@ void drawEvents() {
   PFont font = createFont("arial", 12);
 
   d1 = cp5.addDropdownList("myList-d1")
-    .setPosition(200, 50)
-      .setSize(175, 25)
+    .setPosition(40, 50)
+      .setSize(180, 25)
         ;     
   customize1(d1);
 
   d2 = cp5.addDropdownList("myList-d2")
-    .setPosition(500, 50)
+    .setPosition(400, 50)
       .setSize(75, 25)
         ;
   customize2(d2);
 
   presetName = cp5.addTextfield("PresetName")
-    .setPosition(600, 33)
-      .setSize(75, 15)
+    .setPosition(500, 33)
+      .setSize(180, 15)
         .setFont(font)
           .setFocus(true)
             ;
 
   cp5.addBang("connect")
-    .setPosition(400, 30)
+    .setPosition(240, 30)
       .setSize(80, 25)
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
           ; 
 
   cp5.addBang("send")
-    .setPosition(360, 575)
+    .setPosition(600, 600)
       .setSize(80, 25)
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
           ;
 
-//  cp5.addTextfield("connected")
-//    .setPosition()
-//      .set
-    }
+  connect = cp5.addTextlabel("connected")
+    .setText("Controller is connected")
+      .setPosition(35, 600)
+        .setFont(createFont("arial", 16))
+          .setVisible(false)
+            ;
 
-    public void send() {
-      send[0] = "";
+  notConnect = cp5.addTextlabel("notConnected")
+    .setText("Controller is not connected")
+      .setPosition(35, 600)
+        .setFont(createFont("arial", 16))
+          .setVisible(true)
+            ;
 
-      if (inputCorrect() == true) {
-        //    send = createOutput();
-        String tmp = createOutput();
-        for ( int i = 0; i < 10; i++) {
-          if ( i == 0) {
-            send[i] = tmp.substring(0, 51);
-          } else if ( i>0 && i<9 ) {
-            send[i] = tmp.substring(i*50+1, i*50+51);
-          } else {
-            send[i] = tmp.substring(i*50+1);
-          }
-        }
+  error1 = cp5.addTextlabel("error1")
+    .setText("please insert only a number from 0-127")
+      .setPosition(300, 590)
+        .setFont(createFont("arial", 16))
+          .setVisible(false)
+            ;
 
-        for (int i = 0; i < 10; i++) {
+  error2 = cp5.addTextlabel("error2")
+    .setText("for cc-Values and value range")
+      .setPosition(300, 615)
+        .setFont(createFont("arial", 16))
+          .setVisible(false)
+            ;
+}
 
-          delay(700);
-          myPort.clear();
-          myPort.write(send[i]);
-          println(send[i]);
-          delay(700);
-        }
+void drawManual() {
+  fill(5, 53, 80);
+  stroke(20, 106, 155);
+  rect(720, 100, 150, 450);
+
+  fill(255);
+  String manual = "1. Select the port of the midicontroller\n\n2. Click 'CONNECT' (The midicontroller should restart and you see it at the bottom of the editor as well)\n\n3. Select the menu 'connect 2 editor' on the midicontroller\n\n4. Fill in all fields\n\n5. Click 'SEND'\n\n6. Wait until the midicontroller returns to the main screen";
+  text(manual, 730, 110, 130, 440);
+}
+
+public void send() {
+  send[0] = "";
+  
+  if (inputCorrect() == true) {
+    //    send = createOutput();
+    String tmp = createOutput();
+    for ( int i = 0; i < 10; i++) {
+      if ( i == 0) {
+        send[i] = tmp.substring(0, 51);
+      } else if ( i>0 && i<9 ) {
+        send[i] = tmp.substring(i*50+1, i*50+51);
       } else {
-        send[0] = "";
+        send[i] = tmp.substring(i*50+1);
       }
-      println(inputCorrect());
     }
+
+    for (int i = 0; i < 10; i++) {
+
+      delay(700);
+      myPort.clear();
+      myPort.write(send[i]);
+      println(send[i]);
+      delay(700);
+    }
+  } else {
+    send[0] = "";
+  }
+  println(inputCorrect());
+}
 
 boolean inputCorrect() {
 
@@ -199,11 +235,12 @@ boolean inputCorrect() {
       rtn = hasNoErrors(ccMax);
     }
 
-    //    if ( isNumeric(ccMin) && isNumeric(ccMax) && Integer.parseInt(ccMin) > Integer.parseInt(ccMax) ) {
-    //      cp5.get(Textfield.class, (i+1)+"."+3).setText(ccMin);
-    //      cp5.get(Textfield.class, (i+1)+"."+2).setText(ccMax);
-    //    }
-  }
+    if ( ccMax.length() != 0 && ccMin.length() != 0 && isNumeric(ccMin) && isNumeric(ccMax)
+    && Integer.parseInt(ccMin) > Integer.parseInt(ccMax) ) {
+      cp5.get(Textfield.class, (i+1)+"."+3).setText(ccMin);
+      cp5.get(Textfield.class, (i+1)+"."+2).setText(ccMax);
+    }
+}
 
   return rtn;
 }
@@ -214,30 +251,15 @@ boolean hasNoErrors(String str) {
 
   if (str.length() > 3 || isNumeric(str) == false ) 
   {
-    error = cp5.addTextlabel("error")
-      .setText("please insert only number")
-        .setPosition(100, 575)
-          .setFont(createFont("arial", 18))
-            ;
     rtn = false;
   } else if (Integer.parseInt(str) > 127 || Integer.parseInt(str) < 0)
   {
-    error = cp5.addTextlabel("error")
-      .setText("please insert number form 0-127")
-        .setPosition(100, 575)
-          .setFont(createFont("arial", 18))
-            ;
     rtn = false;
   } else
   {
-    error = cp5.addTextlabel("error")
-      .setText("")
-        .setPosition(100, 575)
-          .setFont(createFont("arial", 18))
-            ;
     rtn = true;
   }
-
+  setError(error1, error2, !rtn);
   return rtn;
 }
 
@@ -316,6 +338,9 @@ String createOutput() {
 public void connect() {
   myPort = new Serial(this, port, 9600);
   myPort.bufferUntil('\n');
+  delay(2000);
+  setContact(connect, notConnect, true);
+
 }
 
 void controlEvent(ControlEvent theEvent) {
@@ -361,14 +386,15 @@ void serialEvent( Serial myPort) {
         firstContact = true;
         myPort.write("A");
         println("contact");
+        
       }
     } else { //if we've already established contact, keep getting and parsing data
       println(val);
+      setContact(connect, notConnect, true);
+
     }
   }
 }
-
-
 
 
 void customize1(DropdownList ddl) {
@@ -384,7 +410,7 @@ void customize1(DropdownList ddl) {
   for (int i=0; i<Serial.list ().length; i++) {
     ddl.addItem(Serial.list()[i], i);
   }
-  //ddl.scroll(0);
+  ddl.scroll(0);
   ddl.setColorBackground(color(60));
   ddl.setColorActive(color(255, 128));
 }
@@ -401,7 +427,7 @@ void customize2(DropdownList ddl) {
   for (int i=0; i<9; i++) {
     ddl.addItem(""+(i+1), i);
   }
-  //ddl.scroll(0);
+  ddl.scroll(0);
   ddl.setColorBackground(color(60));
   ddl.setColorActive(color(255, 128));
 }
@@ -410,12 +436,21 @@ void custom1(Textfield ddl) {
   ddl.captionLabel().set("name");
 }
 void custom2(Textfield ddl) {
-  ddl.captionLabel().set("wertebereich");
+  ddl.captionLabel().set("value range");
 }
 void custom3(Textfield ddl) {
   ddl.captionLabel().set("");
 }
 void custom4(Textfield ddl) {
-  ddl.captionLabel().set("cc-wert");
+  ddl.captionLabel().set("cc-value");
 }
+void setError(Textlabel e1, Textlabel e2, boolean b) {
+  e1.setVisible(b);
+  e2.setVisible(b);
+}
+void setContact(Textlabel con, Textlabel noCon, boolean b) {
+  con.setVisible(b);
+  noCon.setVisible(!b);
+}
+
 
